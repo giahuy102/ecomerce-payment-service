@@ -1,0 +1,44 @@
+
+server:
+  port: 8080
+  servlet:
+    context-path: /order-service
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecomerce?reWriteBatchedInserts=true
+    username: postgres
+    password: postgres
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 30
+        order_inserts: true
+    show-sql: true
+  
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    schemas: order_service
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+    properties:
+      schema:
+        registry:
+          url: http://localhost:8087
+
+logging:
+  level:
+    org.hibernate:
+      engine.jdbc.batch.internal.BatchingBatch: DEBUG
