@@ -1,63 +1,20 @@
-CREATE TABLE order_statuses (
-    id INTEGER,
-    status_name VARCHAR(255) UNIQUE NOT NULL,
-    color CHAR(7) UNIQUE NOT NULL,
-    created_by_staff_id UUID,
-    updated_by_staff_id UUID,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    CONSTRAINT pk_order_status PRIMARY KEY(id)
-);
-
-CREATE TABLE orders (
+CREATE TABLE payment_accounts (
     id UUID,
     customer_id UUID,
-    order_status_id INTEGER,
-    order_approved_at DATE,
-    order_delivered_customer_date DATE,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    CONSTRAINT pk_order PRIMARY KEY(id),
-    CONSTRAINT fk_order_order_status
-        FOREIGN KEY(order_status_id)
-        REFERENCES order_statuses(id)
-        ON DELETE SET NULL
+    balance DOUBLE PRECISION,
+    payment_method VARCHAR(255) NOT NULL,
+    CONSTRAINT pk_payment_account PRIMARY KEY(id)
 );
 
-CREATE TABLE order_items (
+CREATE TABLE payments (
     id UUID,
-    product_id UUID,
+    payment_account_id UUID,
     order_id UUID,
-    price DOUBLE PRECISION,
-    quantity INTEGER,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    CONSTRAINT pk_order_item PRIMARY KEY(id),
-    CONSTRAINT fk_order_item_order
-        FOREIGN KEY(order_id)
-        REFERENCES orders(id)
-        ON DELETE CASCADE
-);
-
-CREATE TABLE carts (
-    id UUID,
-    customer_id UUID,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    CONSTRAINT pk_cart PRIMARY KEY(id)
-);
-
-CREATE TABLE cart_items (
-    id UUID,
-    product_id UUID,
-    cart_id UUID,
-    price DOUBLE PRECISION,
-    quantity INTEGER,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    CONSTRAINT pk_cart_item PRIMARY KEY(id),
-    CONSTRAINT fk_cart_item_cart
-        FOREIGN KEY(cart_id)
-        REFERENCES carts(id)
+    payment_time TIMESTAMP,
+    total_price DOUBLE PRECISION,
+    CONSTRAINT pk_payment PRIMARY KEY(id),
+    CONSTRAINT fk_payment_payment_account
+        FOREIGN KEY(payment_account_id)
+        REFERENCES payment_account(id)
         ON DELETE CASCADE
 );
