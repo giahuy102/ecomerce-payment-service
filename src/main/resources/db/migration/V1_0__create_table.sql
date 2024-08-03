@@ -1,6 +1,6 @@
 CREATE TABLE payment_accounts (
     id UUID,
-    customer_id UUID,
+    user_id UUID,
     balance DOUBLE PRECISION,
     payment_method VARCHAR(255) NOT NULL,
     CONSTRAINT pk_payment_account PRIMARY KEY(id)
