@@ -1,10 +1,8 @@
 package com.ecomerce.ms.service.payment.application.command;
 
-import com.ecomerce.ms.service.payment.domain.aggregate.orderpayment.OrderPayment;
 import com.ecomerce.ms.service.payment.domain.aggregate.orderpayment.OrderPaymentRepository;
 import com.ecomerce.ms.service.payment.domain.aggregate.orderpayment.PaymentAccount;
 import com.ecomerce.ms.service.payment.domain.aggregate.orderpayment.PaymentAccountRepository;
-import com.ecomerce.ms.service.payment.domain.aggregate.orderpayment.PaymentStatus;
 import com.ecomerce.ms.service.payment.domain.shared.external.order.Order;
 import com.ecomerce.ms.service.payment.domain.shared.external.order.OrderItem;
 import com.huyle.ms.command.CommandHandler;
@@ -18,18 +16,18 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Slf4j
-@Service
 @RequiredArgsConstructor
-public class CreateOrderPaymentHandler implements CommandHandler<CreateOrderPaymentCommand, Void> {
+@Service
+@Slf4j
+public class CompensateOrderPaymentHandler implements CommandHandler<CompensateOrderPaymentCommand, Void> {
 
     private final OrderPaymentRepository orderPaymentRepository;
     private final PaymentAccountRepository paymentAccountRepository;
 
     @Override
     @Transactional
-    public Void handle(CreateOrderPaymentCommand createOrderPaymentCommand) {
-        Order order = createOrderPaymentCommand.getOrder();
+    public Void handle(CompensateOrderPaymentCommand compensateOrderPaymentCommand) {
+        Order order = compensateOrderPaymentCommand.getOrder();
         List<OrderItem> orderItems = order.getOrderItems();
         Double totalPrice = order.calculateTotalPrice();
         PaymentAccount customerAccount = paymentAccountRepository.findById(order.getCustomerUserId())
@@ -37,10 +35,8 @@ public class CreateOrderPaymentHandler implements CommandHandler<CreateOrderPaym
                     log.error("Payment account not found for customer id {}", order.getCustomerUserId());
                     return new RuntimeException("Payment account not found");
                 });
-        if (customerAccount.getBalance() < totalPrice) {
-            log.info("Payment account id {} not have enough balance", customerAccount.getId());
-            throw new RuntimeException("Payment account balance not enough");
-        }
+        customerAccount.transferToAccount(totalPrice);
+        paymentAccountRepository.save(customerAccount);
         List<UUID> merchantUserIds = orderItems
                 .stream()
                 .map(OrderItem::getMerchantUserId)
@@ -49,19 +45,9 @@ public class CreateOrderPaymentHandler implements CommandHandler<CreateOrderPaym
         List<PaymentAccount> merchantAccounts = paymentAccountRepository.findByUserIdIn(merchantUserIds);
         Map<UUID, Double> paymentByMerchants = order.calculateTotalPaymentEachMerchant();
         merchantAccounts.forEach(account -> {
-            account.transferToAccount(paymentByMerchants.get(account.getUserId()));
+            account.takeFromAccount(paymentByMerchants.get(account.getUserId()));
             paymentAccountRepository.save(account);
         });
-        customerAccount.takeFromAccount(totalPrice);
-        paymentAccountRepository.save(customerAccount);
-
-//        var orderPayment = OrderPayment.builder()
-//                .orderId(order.getId())
-//                .paymentAccount(customerAccount)
-//                .totalPrice(totalPrice)
-//                .status(PaymentStatus.SUCCESS)
-//                .build();
-//        orderPaymentRepository.save(orderPayment);
         return null;
     }
 }

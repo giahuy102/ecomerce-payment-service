@@ -2,7 +2,7 @@
 server:
   port: 8080
   servlet:
-    context-path: /order-service
+    context-path: /payment-service
 
 spring:
   datasource:
@@ -26,13 +26,22 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
-    schemas: order_service
+    schemas: payment_service
 
   kafka:
     bootstrap-servers: localhost:9092
     producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      key-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 3 # default is 5
+    consumer:
+      key-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      auto-offset-reset: earliest
     properties:
       schema:
         registry:

@@ -1,5 +1,6 @@
 package com.ecomerce.ms.service.payment.domain.shared.external.order;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@Builder
 public class Order {
     private UUID id;
     private UUID customerUserId;

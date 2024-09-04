@@ -9,6 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class CreateOrderPaymentCommand implements Command {
+public class CompensateOrderPaymentCommand implements Command {
     private Order order;
 }
