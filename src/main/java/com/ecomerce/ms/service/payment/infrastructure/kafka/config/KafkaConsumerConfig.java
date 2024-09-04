@@ -1,7 +1,7 @@
 package com.ecomerce.ms.service.payment.infrastructure.kafka.config;
 
 import com.ecomerce.ms.service.OrderingSagaKey;
-import com.ecomerce.ms.service.PaymentProcessingReply;
+import com.ecomerce.ms.service.PaymentProcessingCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -27,8 +27,8 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<OrderingSagaKey, PaymentProcessingReply> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<OrderingSagaKey, PaymentProcessingReply> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<OrderingSagaKey, PaymentProcessingCommand> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<OrderingSagaKey, PaymentProcessingCommand> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
